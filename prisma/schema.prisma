@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id           Int         @id @default(autoincrement())
+  slug         String      @unique
+  name         String
+  platform     String
+  genre        String
+  description  String      @default("")
+  priceCents   Int
+  oldPriceCents Int?
+  stock        Int         @default(0)
+  cover        String      @default("")
+  hero         String      @default("")
+  published    Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  items        OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  name            String
+  email           String
+  method          String      // "pix" | "card"
+  status          String      @default("pending") // pending | paid | canceled
+  totalCents      Int
+  stripeSessionId String?     @unique
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id        Int    @id @default(autoincrement())
+  orderId   String
+  gameId    Int
+  name      String
+  qty       Int
+  unitCents Int
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  game      Game   @relation(fields: [gameId], references: [id])
+}
